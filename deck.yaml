@@ -1,0 +1,164 @@
+_format_version: "3.0"
+_info:
+  defaults: {}
+  select_tags:
+    - mcpdemo
+_konnect:
+  control_plane_name: default
+plugins:
+  - config:
+      allow_origin_absent: true
+      credentials: true
+      exposed_headers: null
+      headers:
+        - Authorization
+        - "Accept     "
+        - "Content-Type "
+        - Origin
+        - "Access-Control-Allow-Credentials "
+        - Access-Control-Allow-Origin
+        - Access-Control-Allow-Headers
+        - apikey
+        - MCP-Protocol-Version
+        - MCP-Authentication
+        - MCP-Proxy-Auth-Token
+      max_age: 3600
+      methods:
+        - GET
+        - HEAD
+        - PUT
+        - PATCH
+        - POST
+        - DELETE
+        - OPTIONS
+        - TRACE
+        - CONNECT
+      origins:
+        - "*"
+        - http://localhost:6274
+      preflight_continue: false
+      private_network: false
+    enabled: true
+    name: cors
+    protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+services:
+  - connect_timeout: 60000
+    enabled: true
+    host: api.weatherapi.com
+    name: mcp_proxy_service
+    path: /v1/current.json
+    port: 443
+    protocol: https
+    read_timeout: 60000
+    retries: 5
+    routes:
+      - https_redirect_status_code: 426
+        name: mcp_proxy_route
+        path_handling: v0
+        paths:
+          - /weather
+          - /.well-known/oauth-protected-resource
+        plugins:
+          - config:
+              args: {}
+              authorization_servers:
+                - https://keycloakmcp.local.test:8441/realms/demo
+                - https://keycloakmcp.local.test:8441
+              cache_introspection: false
+              claim_to_header:
+                - claim: username
+                  header: x-username
+                - claim: non-existent
+                  header: x-blah
+              client_alg: null
+              client_auth: null
+              client_id: kong-client-secret
+              client_jwk: null
+              client_secret: 38beb963-2786-42b8-8e14-a5f391b4ba93
+              headers: {}
+              http_proxy: null
+              http_proxy_authorization: null
+              http_version: 1.1
+              https_proxy: null
+              https_proxy_authorization: null
+              insecure_relaxed_audience_validation: false
+              introspection_endpoint: https://keycloakmcp.local.test:8441/realms/demo/protocol/openid-connect/token/introspect
+              introspection_format: null
+              keepalive: true
+              max_request_body_size: 8192
+              metadata_endpoint: /.well-known/oauth-protected-resource/weather
+              mtls_introspection_endpoint: null
+              no_proxy: null
+              resource: http://kongdev.local.test:8000/weather
+              scopes_supported:
+                - profile
+              ssl_verify: false
+              timeout: 10000
+              tls_client_auth_cert: null
+              tls_client_auth_key: null
+              tls_client_auth_ssl_verify: false
+            enabled: true
+            name: ai-mcp-oauth2
+            protocols:
+              - grpc
+              - grpcs
+              - http
+              - https
+          - config:
+              logging:
+                log_payloads: true
+                log_statistics: true
+              max_request_body_size: 8192
+              mode: conversion-listener
+              server:
+                forward_client_headers: true
+                tag: null
+                timeout: 60000
+              tools:
+                - annotations:
+                    destructive_hint: null
+                    idempotent_hint: null
+                    open_world_hint: null
+                    read_only_hint: null
+                    title: Current weather
+                  description: Get current weather for a location
+                  headers: null
+                  host: null
+                  method: GET
+                  parameters:
+                    - description: Location query (city name, ZIP/postal, IP, or lat/long)
+                      in: query
+                      name: q
+                      required: true
+                      schema:
+                        type: string
+                    - description: Include air quality data (yes/no)
+                      in: query
+                      name: aqi
+                      required: false
+                      schema:
+                        type: string
+                  path: /weather
+                  query: null
+                  request_body: null
+                  scheme: null
+            enabled: true
+            name: ai-mcp-proxy
+            protocols:
+              - grpc
+              - grpcs
+              - http
+              - https
+        preserve_host: false
+        protocols:
+          - http
+          - https
+        regex_priority: 0
+        request_buffering: true
+        response_buffering: true
+        strip_path: true
+    write_timeout: 60000

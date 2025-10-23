@@ -1,0 +1,65 @@
+version: "3.9"
+
+networks:
+  kong-net:
+    driver: bridge
+
+services:
+  kong-gateway:
+    image: kong/kong-gateway:3.12
+    container_name: kong-gateway
+    environment:
+      KONG_ROLE: data_plane
+      KONG_DATABASE: "off"
+      KONG_VITALS: "off"
+      KONG_CLUSTER_MTLS: pki
+      KONG_CLUSTER_CONTROL_PLANE: <changeme>
+      KONG_CLUSTER_SERVER_NAME: <changeme>
+      KONG_CLUSTER_TELEMETRY_ENDPOINT: <changeme>
+      KONG_CLUSTER_TELEMETRY_SERVER_NAME: <changeme>
+      KONG_CLUSTER_CERT: <changeme>
+      KONG_CLUSTER_CERT_KEY: <changeme>
+      KONG_LUA_SSL_TRUSTED_CERTIFICATE: system
+      KONG_KONNECT_MODE: "on"
+      KONG_UNTRUSTED_LUA: "on"
+      KONG_CLUSTER_DP_LABELS: type:docker-macOsArmOS
+      KONG_ROUTER_FLAVOR: expressions
+      KONG_STATUS_LISTEN: 0.0.0.0:8100
+    networks:
+      - kong-net
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8100:8100"
+    extra_hosts:
+      - "kongdev.local.test:host-gateway" # Docker ≥ 20.10
+      - "keycloakmcp.local.test:host-gateway"
+  keycloak-mcp:
+    container_name: keycloak-mcp
+    image: quay.io/keycloak/keycloak:22.0
+    command:
+      - >
+        start-dev
+        --http-port=8081
+        --https-port=8441
+        --hostname=keycloakmcp.local.test
+        --hostname-strict=false
+        --https-certificate-file=/opt/keycloak/certs/keycloakmcp.local.test.pem
+        --https-certificate-key-file=/opt/keycloak/certs/keycloakmcp.local.test-key.pem
+        --import-realm
+    volumes:
+      - ./mcp/demo.json:/opt/keycloak/data/import/demo.json
+      - ./certs:/opt/keycloak/certs:ro # Mount the directory containing the certs
+    environment:
+      KEYCLOAK_ADMIN: changeme
+      KEYCLOAK_ADMIN_PASSWORD: changeme
+      DB_VENDOR: h2
+      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
+    ports:
+      - "8081:8081"
+      - "8441:8441"
+    networks:
+      - kong-net
+    extra_hosts:
+      - "keycloakmcp.local.test:host-gateway" # Docker ≥ 20.10
+
