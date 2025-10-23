@@ -92,23 +92,30 @@ client_id: changeme
 client_secret: changeme
 ```
 
-### 8. Apply Kong Configuration with Deck
+### 8. Sign up for weather api api key access
+
+Go to https://www.weatherapi.com/ and sign up for an account and create an api key to use in this demo
+
+### 9. Update weather-api-key in request-transformer-advanced plugin in deck/deck.yaml file
+
+Update the weather api key in `deck/deck.yaml` to match your apikey after you signed up on the weather api site in Step 8
+
+```yaml
+# In the ai-mcp-oauth2 plugin config:
+client_id: changeme
+client_secret: changeme
+```
+
+### 10. Apply Kong Configuration with Deck
 
 ```bash
 # Navigate to deck configuration directory
 cd deck
 
-# Validate configuration
-deck validate
-
 # Apply configuration to Kong Konnect
-deck gateway sync deck.yaml --konnect-addr https://<changeme>.api.konghq.com --konnect-token $YOUR_KONNECT_TOKEN --konnect-control-plane-name $cp_name
+deck gateway sync deck.yaml --konnect-addr https://<changeme>.api.konghq.com --konnect-token $YOUR_KONNECT_TOKEN --konnect-control-plane-name $CP_NAME
 
 ```
-
-### 8. Sign up for weather api api key access
-
-Go to https://www.weatherapi.com/ and sign up for an account and create an api key to use in this demo
 
 ## Services & Ports
 
@@ -134,11 +141,11 @@ Go to https://www.weatherapi.com/ and sign up for an account and create an api k
 ```bash
 Starting MCP inspector...
 ⚙️ Proxy server listening on localhost:6277
-🔑 Session token: 3760887cedd6e1d625de18935f43df7209ced43e7118ffa168a45cdb6c470a58
+🔑 Session token: xxx
 Use this token to authenticate requests or set DANGEROUSLY_OMIT_AUTH=true to disable auth
 
 🚀 MCP Inspector is up and running at:
-http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=3760887cedd6e1d625de18935f43df7209ced43e7118ffa168a45cdb6c470a58
+http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=xxx
 
 ```
 
