@@ -159,7 +159,7 @@ http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=xxx
 
 ### 4. go to `Open Auth Settings`
 
-### 5. run the `guided oauth flow` or `quick oauth flow`
+### 5. run the `guided oauth flow` or `quick oauth flow` - user is "john" password is "doe" for the keycloak login
 
 ### 6. Paste the proxy token fron step 1 into the GUI of MCP inspector -> Configuration -> Proxy Session Token
 
