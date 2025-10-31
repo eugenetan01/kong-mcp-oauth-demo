@@ -123,6 +123,10 @@ This setup includes:
 
 5. Run the `guided oauth flow` or `quick oauth flow` and you should see a success token retrieved from keycloak - this proves the Oauth flow is working
 
+   - if prompted to login, credentials are here loaded already to keycloak through the mcp/demo.json config:
+     - User: john
+     - Password: doe
+
 6. Try to click connect on the left panel now - see it fails and check dev tools to see 401 error, or see kong logs. If the AI MCP Oauth plugin was configured correctly, it will direct you to Keycloak to login.
 
 7. Login with these credentials loaded into the demo realm through the mcp/demo.json config:
