@@ -22,148 +22,115 @@ This setup includes:
 
 ## Quick Start
 
-### 1. Starting MCP inspector
+1. Starting MCP inspector
 
-```sh
-cd /gh/inspector
-npm start
+   ```sh
+   cd /gh/inspector
+   npm start
+   ```
 
-# run this in terminal - to disable CORS requirements when starting the browser on Chrome:
-open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security
-```
+2. generate certs for keycloak to be accessible over https - this is required for keycloak to start:
 
-### 2. Also check to ensure:
+   ```bash
+   cd ./certs
+   brew install mkcert nss
+   mkcert -install
+   mkcert localhost
+   ```
 
-a. `/etc/hosts` file has below config:
+3. Update Kong Konnect Configuration
 
-```
-127.0.0.1 keycloakmcp.local.test
-127.0.0.1 kongdev.local.test
-```
+   - Edit `docker-compose.yaml` and update the Kong environment variables with your Konnect details:
 
-### 3. docker compose file already has resolved the same hostnames in point 1 to `host.docker.internal`
+   ```yaml
+   KONG_CLUSTER_CONTROL_PLANE: YOUR_CONTROL_PLANE_ENDPOINT
+   KONG_CLUSTER_SERVER_NAME: YOUR_CONTROL_PLANE_SERVER_NAME
+   KONG_CLUSTER_TELEMETRY_ENDPOINT: YOUR_TELEMETRY_ENDPOINT
+   KONG_CLUSTER_TELEMETRY_SERVER_NAME: YOUR_TELEMETRY_SERVER_NAME
+   KONG_CLUSTER_CERT: |
+     -----BEGIN CERTIFICATE-----
+     YOUR_CLUSTER_CERTIFICATE
+     -----END CERTIFICATE-----
+   KONG_CLUSTER_CERT_KEY: |
+     -----BEGIN PRIVATE KEY-----
+     YOUR_PRIVATE_KEY
+     -----END PRIVATE KEY-----
+   ```
 
-- to ensure consistency when resolving hostname of services in containers when accessing from browser on localhost or from within containers
-- (i.e. Kong accesss keycloak introspection endpoints etc vs MCP inspector accesss keycloak auth server endpoints)
+4. Edit `docker-compose.yaml` and update the keycloak environment variables with your admin details or leave it as it is:
 
-### 4. generate certs for keycloak to be accessible over https:
+   ```yaml
+   environment:
+     KEYCLOAK_ADMIN: changeme
+     KEYCLOAK_ADMIN_PASSWORD: changeme
+   ```
 
-```bash
-cd ./certs
-brew install mkcert nss
-mkcert -install
-mkcert keycloakmcp.local.test
-```
+5. Update Configuration
 
-### 5. Update Kong Konnect Configuration
+   - Update the Keycloak client secret in `deck/mcp_oauth.yaml` to match your Keycloak realm in mcp/demo.json - line 626 and 633 or leave it as it is:
 
-Edit `docker-compose.yaml` and update the Kong environment variables with your Konnect details:
+   ```yaml
+   # In the ai-mcp-oauth2 plugin config:
+   client_id: changeme
+   client_secret: changeme
+   ```
 
-```yaml
-KONG_CLUSTER_CONTROL_PLANE: YOUR_CONTROL_PLANE_ENDPOINT
-KONG_CLUSTER_SERVER_NAME: YOUR_CONTROL_PLANE_SERVER_NAME
-KONG_CLUSTER_TELEMETRY_ENDPOINT: YOUR_TELEMETRY_ENDPOINT
-KONG_CLUSTER_TELEMETRY_SERVER_NAME: YOUR_TELEMETRY_SERVER_NAME
-KONG_CLUSTER_CERT: |
-  -----BEGIN CERTIFICATE-----
-  YOUR_CLUSTER_CERTIFICATE
-  -----END CERTIFICATE-----
-KONG_CLUSTER_CERT_KEY: |
-  -----BEGIN PRIVATE KEY-----
-  YOUR_PRIVATE_KEY
-  -----END PRIVATE KEY-----
-```
+6. Sign up for weather api api key access
 
-### 6. Edit `docker-compose.yaml` and update the keycloak environment variables with your admin details:
+   - Go to https://www.weatherapi.com/ and sign up for an account and create an api key to use in this demo
 
-```yaml
-environment:
-  KEYCLOAK_ADMIN: changeme
-  KEYCLOAK_ADMIN_PASSWORD: changeme
-```
+7. Update weather-api-key in request-transformer-advanced plugin in deck/deck.yaml file
 
-### 7. Update Configuration
+   - Update the weather api key in `deck/deck.yaml` to match your apikey after you signed up on the weather api site in Step 8
 
-Update the Keycloak client secret in `deck/mcp_oauth.yaml` to match your Keycloak realm in mcp/demo.json - line 626 and 633:
+8. Apply Kong Configuration with Deck
 
-```yaml
-# In the ai-mcp-oauth2 plugin config:
-client_id: changeme
-client_secret: changeme
-```
+   ```bash
+   # Navigate to deck configuration directory
+   cd deck
 
-### 8. Sign up for weather api api key access
+   # Change line 7 of deck/deck.yaml to point to your control plane
 
-Go to https://www.weatherapi.com/ and sign up for an account and create an api key to use in this demo
+   # Apply configuration to Kong Konnect
+   deck gateway sync deck.yaml --konnect-addr https://<changeme>.api.konghq.com --konnect-token $YOUR_KONNECT_TOKEN --konnect-control-plane-name $CP_NAME
 
-### 9. Update weather-api-key in request-transformer-advanced plugin in deck/deck.yaml file
-
-Update the weather api key in `deck/deck.yaml` to match your apikey after you signed up on the weather api site in Step 8
-
-```yaml
-# In the ai-mcp-oauth2 plugin config:
-client_id: changeme
-client_secret: changeme
-```
-
-### 10. Apply Kong Configuration with Deck
-
-```bash
-# Navigate to deck configuration directory
-cd deck
-
-# Apply configuration to Kong Konnect
-deck gateway sync deck.yaml --konnect-addr https://<changeme>.api.konghq.com --konnect-token $YOUR_KONNECT_TOKEN --konnect-control-plane-name $CP_NAME
-
-```
-
-## Services & Ports
-
-| Service      | Port | Purpose                           |
-| ------------ | ---- | --------------------------------- |
-| Kong Gateway | 8000 | HTTP Proxy                        |
-| Keycloak     | 8441 | Auth Server HTTPS                 |
-| Weather API  | 443  | External service (weatherapi.com) |
-
-## Key Configuration Features
-
-### MCP (Model Context Protocol) Integration
-
-- **OAuth2 Protection**: Weather API protected with Keycloak OAuth2
-- **MCP Proxy Plugin**: Converts API to MCP tool format for AI assistants
-- **CORS Support**: Configured for MCP Inspector and browser clients
-- **Tag-based Deployment**: Uses `mcpdemo` tag for selective deployment
+   ```
 
 ## Testing the Setup
 
-### 1. Fetch the proxy token from terminal when starting mcp inspector like below:
+1. Fetch the proxy token from terminal when starting mcp inspector like below:
 
-```bash
-Starting MCP inspector...
-⚙️ Proxy server listening on localhost:6277
-🔑 Session token: xxx
-Use this token to authenticate requests or set DANGEROUSLY_OMIT_AUTH=true to disable auth
+   ```bash
+   Starting MCP inspector...
+   ⚙️ Proxy server listening on localhost:6277
+   🔑 Session token: xxx
+   Use this token to authenticate requests or set DANGEROUSLY_OMIT_AUTH=true to disable auth
 
-🚀 MCP Inspector is up and running at:
-http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=xxx
+   🚀 MCP Inspector is up and running at:
+   http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=xxx
 
-```
+   ```
 
-### 2. go to `localhost:6274` and choose:
+2. Go to `localhost:6274` and choose:
 
-- Transport Type: `Streamable HTTP`
-- URL: `http://kongdev.local.test:8000/weather`
-- Connection Type: `Via Proxy`
+   - Transport Type: `Streamable HTTP`
+   - URL: `http://localhost:8000/weather`
+   - Connection Type: `Via Proxy`
 
-### 3. try to connect - see it fails and check dev tools to see 401 error, or see kong logs
+3. Paste the proxy token fron step 1 into the GUI of MCP inspector -> Configuration -> Proxy Session Token. Alternatively, just use the link with the `MCP_PROXY_AUTH_TOKEN` provided to load the token directly in config
 
-### 4. go to `Open Auth Settings`
+4. Go to `Open Auth Settings`
 
-### 5. run the `guided oauth flow` or `quick oauth flow`
+5. Run the `guided oauth flow` or `quick oauth flow` and you should see a success token retrieved from keycloak - this proves the Oauth flow is working
 
-### 6. Paste the proxy token fron step 1 into the GUI of MCP inspector -> Configuration -> Proxy Session Token
+6. Try to click connect on the left panel now - see it fails and check dev tools to see 401 error, or see kong logs. If the AI MCP Oauth plugin was configured correctly, it will direct you to Keycloak to login.
 
-### 7. Click Connect and see it works - you should see a `Connected` and be able to access the tools in the MCP server
+7. Login with these credentials loaded into the demo realm through the mcp/demo.json config:
+
+   - User: john
+   - Password: doe
+
+8. If successful, you should see a `Connected` and be able to access the tools in the MCP server
 
 ## Configuration Files
 

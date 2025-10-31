@@ -4,7 +4,7 @@ _info:
   select_tags:
     - mcpdemo
 _konnect:
-  control_plane_name: default
+  control_plane_name: changeme
 plugins:
   - config:
       allow_origin_absent: true
@@ -12,8 +12,8 @@ plugins:
       exposed_headers: null
       headers:
         - Authorization
-        - "Accept     "
-        - "Content-Type "
+        - Accept
+        - Content-Type
         - Origin
         - "Access-Control-Allow-Credentials "
         - Access-Control-Allow-Origin
@@ -51,6 +51,44 @@ services:
     host: api.weatherapi.com
     name: mcp_proxy_service
     path: /v1/current.json
+    plugins:
+      - config:
+          add:
+            body: []
+            headers: []
+            json_types: []
+            querystring:
+              - "key: changeme" # add your weather api key here
+          allow:
+            body: null
+          append:
+            body: []
+            headers: []
+            json_types: []
+            querystring: []
+          dots_in_keys: true
+          http_method: null
+          remove:
+            body: []
+            headers: []
+            querystring: []
+          rename:
+            body: []
+            headers: []
+            querystring: []
+          replace:
+            body: []
+            headers: []
+            json_types: []
+            querystring: []
+            uri: null
+        enabled: true
+        name: request-transformer-advanced
+        protocols:
+          - grpc
+          - grpcs
+          - http
+          - https
     port: 443
     protocol: https
     read_timeout: 60000
@@ -66,8 +104,8 @@ services:
           - config:
               args: {}
               authorization_servers:
-                - https://keycloakmcp.local.test:8441/realms/demo
-                - https://keycloakmcp.local.test:8441
+                - https://localhost:8441/realms/demo
+                - https://localhost:8441
               cache_introspection: false
               claim_to_header:
                 - claim: username
@@ -76,24 +114,24 @@ services:
                   header: x-blah
               client_alg: null
               client_auth: null
-              client_id: kong-client-secret
+              client_id: changeme
               client_jwk: null
-              client_secret: 38beb963-2786-42b8-8e14-a5f391b4ba93
+              client_secret: changeme
               headers: {}
               http_proxy: null
               http_proxy_authorization: null
               http_version: 1.1
               https_proxy: null
               https_proxy_authorization: null
-              insecure_relaxed_audience_validation: false
-              introspection_endpoint: https://keycloakmcp.local.test:8441/realms/demo/protocol/openid-connect/token/introspect
+              insecure_relaxed_audience_validation: true
+              introspection_endpoint: https://keycloak-mcp:8441/realms/demo/protocol/openid-connect/token/introspect
               introspection_format: null
               keepalive: true
               max_request_body_size: 8192
               metadata_endpoint: /.well-known/oauth-protected-resource/weather
               mtls_introspection_endpoint: null
               no_proxy: null
-              resource: http://kongdev.local.test:8000/weather
+              resource: http://localhost:8000/weather
               scopes_supported:
                 - profile
               ssl_verify: false

@@ -13,12 +13,32 @@ services:
       KONG_DATABASE: "off"
       KONG_VITALS: "off"
       KONG_CLUSTER_MTLS: pki
-      KONG_CLUSTER_CONTROL_PLANE: <changeme>
-      KONG_CLUSTER_SERVER_NAME: <changeme>
-      KONG_CLUSTER_TELEMETRY_ENDPOINT: <changeme>
-      KONG_CLUSTER_TELEMETRY_SERVER_NAME: <changeme>
-      KONG_CLUSTER_CERT: <changeme>
-      KONG_CLUSTER_CERT_KEY: <changeme>
+      KONG_CLUSTER_CONTROL_PLANE: 02d9847534.au.cp0.konghq.com:443
+      KONG_CLUSTER_SERVER_NAME: 02d9847534.au.cp0.konghq.com
+      KONG_CLUSTER_TELEMETRY_ENDPOINT: 02d9847534.au.tp0.konghq.com:443
+      KONG_CLUSTER_TELEMETRY_SERVER_NAME: 02d9847534.au.tp0.konghq.com
+      KONG_CLUSTER_CERT: |
+        -----BEGIN CERTIFICATE-----
+        MIICFzCCAbygAwIBAgIBATAKBggqhkjOPQQDBDA8MTowCQYDVQQGEwJBVTAtBgNV
+        BAMeJgBrAG8AbgBuAGUAYwB0AC0AawBvAG4AbgBlAGMAdAAtAGwAYQBiMB4XDTI1
+        MTAzMTA5MTU1M1oXDTM1MTAzMTA5MTU1M1owPDE6MAkGA1UEBhMCQVUwLQYDVQQD
+        HiYAawBvAG4AbgBlAGMAdAAtAGsAbwBuAG4AZQBjAHQALQBsAGEAYjBZMBMGByqG
+        SM49AgEGCCqGSM49AwEHA0IABFb+vxkKNzKOPBYRKRiinKj9ysZ9p+hEbBs8bhKs
+        vKYOeJeS0l3t7JNKS/oFBic2CvB8DZvmR4cSed7l0tQHisujga4wgaswDAYDVR0T
+        AQH/BAIwADALBgNVHQ8EBAMCAAYwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUF
+        BwMCMBcGCSsGAQQBgjcUAgQKDAhjZXJ0VHlwZTAjBgkrBgEEAYI3FQIEFgQUAQEB
+        AQEBAQEBAQEBAQEBAQEBAQEwHAYJKwYBBAGCNxUHBA8wDQYFKQEBAQECAQoCARQw
+        EwYJKwYBBAGCNxUBBAYCBAAUAAowCgYIKoZIzj0EAwQDSQAwRgIhANBLG3IRFgm8
+        2vzJktVQumqy7oOBBheR6187j8SLX7GMAiEA1k37+kFQmKbe3OI3L+Jj4+YIgFde
+        0Ornad1h2bOZ/Pc=
+        -----END CERTIFICATE-----
+      KONG_CLUSTER_CERT_KEY: |
+        -----BEGIN PRIVATE KEY-----
+        MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgo8wfJqui3PQHhfHJ
+        8JqFB53PnQMmntFuW8+NIRVbPpWgCgYIKoZIzj0DAQehRANCAARW/r8ZCjcyjjwW
+        ESkYopyo/crGfafoRGwbPG4SrLymDniXktJd7eyTSkv6BQYnNgrwfA2b5keHEnne
+        5dLUB4rL
+        -----END PRIVATE KEY-----
       KONG_LUA_SSL_TRUSTED_CERTIFICATE: system
       KONG_KONNECT_MODE: "on"
       KONG_UNTRUSTED_LUA: "on"
@@ -31,9 +51,7 @@ services:
       - "8000:8000"
       - "8443:8443"
       - "8100:8100"
-    extra_hosts:
-      - "kongdev.local.test:host-gateway" # Docker ≥ 20.10
-      - "keycloakmcp.local.test:host-gateway"
+
   keycloak-mcp:
     container_name: keycloak-mcp
     image: quay.io/keycloak/keycloak:22.0
@@ -42,10 +60,10 @@ services:
         start-dev
         --http-port=8081
         --https-port=8441
-        --hostname=keycloakmcp.local.test
+        --hostname=localhost
         --hostname-strict=false
-        --https-certificate-file=/opt/keycloak/certs/keycloakmcp.local.test.pem
-        --https-certificate-key-file=/opt/keycloak/certs/keycloakmcp.local.test-key.pem
+        --https-certificate-file=/opt/keycloak/certs/localhost.pem
+        --https-certificate-key-file=/opt/keycloak/certs/localhost-key.pem
         --import-realm
     volumes:
       - ./mcp/demo.json:/opt/keycloak/data/import/demo.json
@@ -60,6 +78,3 @@ services:
       - "8441:8441"
     networks:
       - kong-net
-    extra_hosts:
-      - "keycloakmcp.local.test:host-gateway" # Docker ≥ 20.10
-
