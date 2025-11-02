@@ -123,7 +123,7 @@ services:
               http_version: 1.1
               https_proxy: null
               https_proxy_authorization: null
-              insecure_relaxed_audience_validation: true
+              insecure_relaxed_audience_validation: true # ensure aud is set to the resource server value in your IDP, if you want to disable this. In this demo, the audience is set to the resource server URL in keycloak already using the custom scopes mapper for the changeme client.
               introspection_endpoint: https://keycloak-mcp:8441/realms/demo/protocol/openid-connect/token/introspect
               introspection_format: null
               keepalive: true
