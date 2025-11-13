@@ -639,7 +639,8 @@
         "http://localhost:8000/*",
         "http://host.docker.internal:8000/*",
         "http://localhost:6274/*",
-        "http://host.docker.internal:6274/*"
+        "http://host.docker.internal:6274/*",
+        "https://app.insomnia.rest/*"
       ],
       "webOrigins": ["http://localhost:6274"],
       "notBefore": 0,
